@@ -28,7 +28,8 @@ jobs:
         if: success()
         run: |
           npm install -g vercel
-          vercel pull --yes --force --token=${{ secrets.VERCEL_TOKEN }}
+          # Línea corregida: Se eliminó --force
+          vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
           vercel build --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
           vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
