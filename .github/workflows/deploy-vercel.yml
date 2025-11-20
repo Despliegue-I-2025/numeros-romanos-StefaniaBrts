@@ -39,4 +39,7 @@ jobs:
             --project=$VERCEL_PROJECT_ID \
             --org=$VERCEL_ORG_ID
 
-          vercel build --pro
+          vercel build --prod --token=$VERCEL_TOKEN
+
+          vercel deploy --prebuilt --token=$VERCEL_TOKEN
+
