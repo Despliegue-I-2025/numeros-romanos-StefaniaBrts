@@ -27,20 +27,18 @@ jobs:
         run: npm test
 
       - name: Desplegar a Vercel
-        if: success()
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          npm install -g vercel
+  if: success()
+  env:
+    VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+    VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  run: |
+    npm install -g vercel
 
-          # Configurar el proyecto usando variables de entorno (requiere Vercel CLI actual)
-          vercel pull --yes --token=$VERCEL_TOKEN
+    vercel pull --yes --token=$VERCEL_TOKEN
 
-          # Construcción en modo producción
-          vercel build --prod --token=$VERCEL_TOKEN
+    vercel build --prod --token=$VERCEL_TOKEN
 
-          # Despliegue final
-          vercel deploy --prebuilt --token=$VERCEL_TOKEN
-          
+    vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+
+
