@@ -1,3 +1,4 @@
+
 name: Despliegue Continuo a Vercel
 
 on:
@@ -9,7 +10,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -34,12 +35,12 @@ jobs:
         run: |
           npm install -g vercel
 
-          vercel pull --yes \
-            --token=$VERCEL_TOKEN \
-            --project=$VERCEL_PROJECT_ID \
-            --org=$VERCEL_ORG_ID
+          # Configurar el proyecto usando variables de entorno (requiere Vercel CLI actual)
+          vercel pull --yes --token=$VERCEL_TOKEN
 
+          # Construcción en modo producción
           vercel build --prod --token=$VERCEL_TOKEN
 
+          # Despliegue final
           vercel deploy --prebuilt --token=$VERCEL_TOKEN
 
