@@ -1,33 +1,26 @@
 {
   "name": "numeros-romanos-api",
   "version": "1.0.0",
-  "description": "API para conversión de números romanos y arábigos.",
-  "main": "api/index.js",
+  "description": "API REST para conversión de números arábigos a romanos y viceversa, desplegada en Vercel.",
+  "main": "romanos.js",
   "scripts": {
-    "start": "node api/index.js",
-    "test": "jest"
+    "start": "node romanos.js",
+    "test": "jest --coverage --coverageDirectory=lcov-report"
   },
   "keywords": [
     "roman",
-    "numbers",
+    "arabic",
+    "converter",
     "api",
-    "express",
-    "jest"
+    "vercel"
   ],
-  "author": "StefaniaBrts",
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5", 
     "express": "^4.18.2"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "supertest": "^6.3.3"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/.vercel/"
-    ]
   }
 }
