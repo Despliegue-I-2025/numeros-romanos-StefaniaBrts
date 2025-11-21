@@ -1,142 +1,45 @@
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 4000;
+name: Despliegue Continuo a Vercel
 
-app.use(express.json());
+on:
+  push:
+    branches:
+      - main
 
-const ROMAN_MAP = {
-  M: 1000, CM: 900, D: 500, CD: 400,
-  C: 100, XC: 90, L: 50, XL: 40,
-  X: 10, IX: 9, V: 5, IV: 4, I: 1
-};
+jobs:
+  test_and_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout del Repositorio
+        uses: actions/checkout@v4
 
-const ROMAN_REGEX = /^(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
 
-function romanToArabic(roman) {
-  const upperRoman = String(roman).toUpperCase();
+      - name: Instalar Dependencias
+        run: npm install
 
-  if (!ROMAN_REGEX.test(upperRoman)) {
-    return null;
-  }
+      - name: Ejecutar Pruebas y Generar Cobertura
+        run: npm test
+        
+      - name: Subir informe de Cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov-report
+          path: ./lcov-report
+          if-no-files-found: ignore 
 
-  let arabic = 0;
-  let i = 0;
-  const romanSymbols = Object.keys(ROMAN_MAP);
-
-  for (const symbol of romanSymbols) {
-    const value = ROMAN_MAP[symbol];
-    while (upperRoman.substring(i, i + symbol.length) === symbol) {
-      arabic += value;
-      i += symbol.length;
-    }
-  }
-
-  if (arabic < 1 || arabic > 3999) {
-    return null;
-  }
-
-  return arabic;
-}
-
-function arabicToRoman(num) {
-  const n = Number(num);
-
-  if (!Number.isInteger(n) || n < 1 || n > 3999) return null;
-
-  const pairs = [
-    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
-    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
-    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
-  ];
-
-  let result = '';
-  let tempNum = n;
-
-  for (const [value, roman] of pairs) {
-    while (tempNum >= value) {
-      result += roman;
-      tempNum -= value;
-    }
-  }
-  return result;
-}
-
-function handleMissingParam(res, paramName) {
-  return res.status(400).json({
-    type: 'about:blank',
-    title: 'Parámetro Requerido',
-    status: 400,
-    detail: `El parámetro '${paramName}' es requerido para esta operación.`,
-  });
-}
-
-function handleConversionError(res, paramType, value) {
-  let detail;
-  const n = Number(value);
-
-  if (paramType === 'arabic') {
-    if (isNaN(n)) {
-       detail = `El número arábigo proporcionado ('${value}') no es un valor numérico válido.`;
-    } 
-    else if (!Number.isInteger(n)) {
-      detail = `El número arábigo proporcionado ('${value}') debe ser un entero sin decimales.`;
-    } 
-    else {
-      detail = `El número arábigo proporcionado ('${value}') está fuera del rango permitido [1-3999].`;
-    }
-  } else if (paramType === 'roman') {
-    detail = `El número romano proporcionado ('${value}') es inválido o está fuera del rango [I-MMMCMXCIX].`;
-  }
-
-  return res.status(400).json({
-    type: 'about:blank',
-    title: 'Error de Conversión',
-    status: 400,
-    detail: detail,
-  });
-}
-
-app.get('/r2a', (req, res) => {
-  const romanNumeral = req.query.roman;
-
-  if (romanNumeral === undefined || romanNumeral === '') {
-    return handleMissingParam(res, 'roman');
-  }
-
-  const arabicNumber = romanToArabic(romanNumeral);
-
-  if (arabicNumber === null) {
-    return handleConversionError(res, 'roman', romanNumeral);
-  }
-
-  return res.json({ arabic: arabicNumber });
-});
-
-app.get('/a2r', (req, res) => {
-  const arabic = req.query.arabic;
-
-  if (arabic === undefined || arabic === '') {
-    return handleMissingParam(res, 'arabic');
-  }
-  
-  const roman = arabicToRoman(arabic);
-
-  if (roman === null) {
-    return handleConversionError(res, 'arabic', arabic);
-  }
-
-  return res.json({ roman });
-});
-
-module.exports = {
-  app,
-  romanToArabic,
-  arabicToRoman,
-  handleMissingParam,
-  handleConversionError,
-  ROMAN_REGEX,
-  ROMAN_MAP
-};
+      - name: Desplegar a Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          alias-domains: |
+            numeros-romanos-api-stefaniabrts.vercel.app
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
 
 
