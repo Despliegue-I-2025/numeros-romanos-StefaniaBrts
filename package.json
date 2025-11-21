@@ -2,9 +2,9 @@
   "name": "numeros-romanos-api",
   "version": "1.0.0",
   "description": "API para conversión de números romanos y arábigos.",
-  "main": "romanos.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node romanos.js",
+    "start": "node api/index.js",
     "test": "jest"
   },
   "keywords": [
@@ -17,6 +17,7 @@
   "author": "StefaniaBrts",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5", 
     "express": "^4.18.2"
   },
   "devDependencies": {

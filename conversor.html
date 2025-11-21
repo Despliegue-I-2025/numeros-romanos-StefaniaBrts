@@ -1,170 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Conversor de Números Romanos | Rojo y Negro</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root { font-family: 'Inter', sans-serif; }
-    .loading-ring { display: inline-block; width: 20px; height: 20px; }
-    .loading-ring:after {
-      content: " ";
-      display: block;
-      width: 16px;
-      height: 16px;
-      margin: 2px;
-      border-radius: 50%;
-      border: 3px solid #fff;
-      border-color: #fff transparent #fff transparent;
-      animation: loading-ring-spin 1.2s linear infinite;
-    }
-    @keyframes loading-ring-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Números Romanos API</title>
+    <!-- Carga de Tailwind CSS para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Gris claro */
+        }
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .input-field {
+            border-color: #d1d5db;
+        }
+    </style>
 </head>
-<body class="bg-red-50 flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-  <div class="w-full max-w-lg bg-white shadow-2xl rounded-2xl p-6 md:p-10 border border-gray-100">
-    <header class="text-center mb-8">
-      <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Conversor Romano ↔ Arábigo</h1>
-      <p class="text-gray-600 text-lg">Convierte números entre 1 y 3999.</p>
-    </header>
+    <!-- Contenedor Principal -->
+    <div class="w-full max-w-lg">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">
+            Conversor de Romanos ↔ Arábigos
+        </h1>
+        
+        <!-- Tarjeta del Conversor -->
+        <div class="bg-white card rounded-xl p-8 space-y-6">
+            
+            <p class="text-center text-sm text-gray-500">
+                Esta aplicación consume la API REST desplegada en Vercel.
+                <br>
+                Rango soportado: 1 a 3999 (I a MMMCMXCIX).
+            </p>
 
-    <div class="space-y-6">
-      <div>
-        <label for="input-number" class="block text-sm font-medium text-gray-700 mb-2">
-          Introduce un Número (Romano o Arábigo)
-        </label>
-        <input type="text" id="input-number" placeholder="Ej: 1994 o MCMXCIV"
-               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-red-600 focus:border-red-600 text-lg"
-               oninput="clearResult()">
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <button id="btn-a2r"
-                class="flex items-center justify-center space-x-2 w-full bg-red-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:bg-red-700 transition duration-300 transform hover:scale-[1.01]"
-                onclick="convert('a2r')">
-          <span id="loader-a2r" class="hidden loading-ring"></span>
-          <span>Arábigo → Romano</span>
-        </button>
-        <button id="btn-r2a"
-                class="flex items-center justify-center space-x-2 w-full bg-gray-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:bg-gray-900 transition duration-300 transform hover:scale-[1.01]"
-                onclick="convert('r2a')">
-          <span id="loader-r2a" class="hidden loading-ring"></span>
-          <span>Romano → Arábigo</span>
-        </button>
-      </div>
+            <!-- Campo Arábigo a Romano -->
+            <div id="a2r-section" class="border border-gray-200 rounded-lg p-4 space-y-3">
+                <label for="arabicInput" class="block text-lg font-medium text-gray-700">Arábigo (1-3999) → Romano</label>
+                <input type="number" id="arabicInput" placeholder="Ej: 1994" class="input-field w-full px-4 py-2 rounded-lg border focus:ring-indigo-500 focus:border-indigo-500">
+                <button onclick="convertArabicToRoman()" class="btn-primary w-full py-2 rounded-lg text-white font-semibold">
+                    Convertir a Romano
+                </button>
+                <p id="romanResult" class="text-center p-2 rounded-lg text-lg font-bold bg-indigo-50 text-indigo-700">Resultado: -</p>
+            </div>
 
-      <div id="result-box"
-           class="min-h-[100px] p-5 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col justify-center transition-all duration-300">
-        <p id="result-text" class="text-3xl font-bold text-center text-gray-900 break-words"></p>
-      </div>
+            <div class="text-center text-gray-400 font-bold">
+                <hr class="my-4">
+                O
+                <hr class="my-4">
+            </div>
+
+            <!-- Campo Romano a Arábigo -->
+            <div id="r2a-section" class="border border-gray-200 rounded-lg p-4 space-y-3">
+                <label for="romanInput" class="block text-lg font-medium text-gray-700">Romano (I-MMMCMXCIX) → Arábigo</label>
+                <input type="text" id="romanInput" placeholder="Ej: MCMXCIV" class="input-field w-full px-4 py-2 rounded-lg border focus:ring-indigo-500 focus:border-indigo-500 uppercase">
+                <button onclick="convertRomanToArabic()" class="btn-primary w-full py-2 rounded-lg text-white font-semibold">
+                    Convertir a Arábigo
+                </button>
+                <p id="arabicResult" class="text-center p-2 rounded-lg text-lg font-bold bg-indigo-50 text-indigo-700">Resultado: -</p>
+            </div>
+
+            <!-- Contenedor de Mensajes de Error (Modal/Toast simulado) -->
+            <div id="messageBox" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+                    <h3 id="messageTitle" class="text-xl font-bold text-red-600 mb-2"></h3>
+                    <p id="messageDetail" class="text-gray-700 mb-4"></p>
+                    <button onclick="hideMessage()" class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg">Cerrar</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <footer class="mt-8 text-center text-sm text-gray-400">
-      Conversión realizada en el navegador — sin servidor.
-    </footer>
-  </div>
-
-  <script>
-    const inputNumber = document.getElementById('input-number');
-    const resultBox = document.getElementById('result-box');
-    const resultText = document.getElementById('result-text');
-    const btnA2R = document.getElementById('btn-a2r');
-    const btnR2A = document.getElementById('btn-r2a');
-    const loaderA2R = document.getElementById('loader-a2r');
-    const loaderR2A = document.getElementById('loader-r2a');
-
-    function clearResult() {
-      resultText.textContent = '';
-      resultBox.classList.remove('border-red-600','bg-red-100','border-green-500','bg-green-100');
-      resultBox.classList.add('border-gray-300','bg-gray-50');
-    }
-
-    function setLoading(direction, isLoading) {
-      const button = direction === 'a2r' ? btnA2R : btnR2A;
-      const loader = direction === 'a2r' ? loaderA2R : loaderR2A;
-      button.disabled = isLoading;
-      if (isLoading) {
-        loader.classList.remove('hidden');
-        button.querySelector('span:last-child').classList.add('invisible');
-      } else {
-        loader.classList.add('hidden');
-        button.querySelector('span:last-child').classList.remove('invisible');
-      }
-    }
-
-    function displayResult(text, isSuccess) {
-      clearResult();
-      resultText.textContent = text;
-      if (isSuccess) {
-        resultBox.classList.remove('border-gray-300','bg-gray-50');
-        resultBox.classList.add('border-green-500','bg-green-100');
-      } else {
-        resultBox.classList.remove('border-gray-300','bg-gray-50');
-        resultBox.classList.add('border-red-600','bg-red-100');
-      }
-    }
-
-    const romanValidRegex = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;
-
-    function romanToArabic(roman) {
-      if (!roman) return null;
-      roman = roman.toUpperCase();
-      if (!romanValidRegex.test(roman)) return null;
-      const map = {I:1, V:5, X:10, L:50, C:100, D:500, M:1000};
-      let total = 0;
-      for (let i = 0; i < roman.length; i++) {
-        const current = map[roman[i]];
-        const next = map[roman[i+1]] || 0;
-        total += current < next ? -current : current;
-      }
-      return total;
-    }
-
-    function arabicToRoman(num) {
-      num = Number(num);
-      if (!Number.isInteger(num) || num < 1 || num > 3999) return null;
-      const pairs = [
-        [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
-        [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
-        [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
-      ];
-      let res = '';
-      for (const [value, roman] of pairs) {
-        while (num >= value) {
-          res += roman;
-          num -= value;
+    <script>
+        // *** IMPORTANTE: REEMPLAZA ESTA URL CON TU DOMINIO REAL DE VERSEL ***
+        const API_BASE_URL = 'https://tu-dominio-de-vercel.vercel.app/api'; 
+        // Si estás ejecutando en local para pruebas, usa: 'http://localhost:4000'
+        
+        /**
+         * Muestra una caja de diálogo personalizada para errores.
+         * @param {string} title Título del mensaje.
+         * @param {string} detail Descripción detallada del error.
+         */
+        function showMessage(title, detail) {
+            document.getElementById('messageTitle').textContent = title;
+            document.getElementById('messageDetail').textContent = detail;
+            document.getElementById('messageBox').classList.remove('hidden');
         }
-      }
-      return res;
-    }
 
-    async function convert(direction) {
-      const raw = inputNumber.value.trim();
-      if (!raw) { displayResult('Por favor, introduce un número.', false); return; }
-      setLoading(direction, true);
-      clearResult();
-      await new Promise(r => setTimeout(r, 200));
+        /**
+         * Oculta la caja de diálogo.
+         */
+        function hideMessage() {
+            document.getElementById('messageBox').classList.add('hidden');
+        }
 
-      if (direction === 'a2r') {
-        const n = Number(raw);
-        if (!Number.isInteger(n)) {
-          displayResult('Introduce un número arábigo válido (ej: 1994).', false);
-        } else {
-          const roman = arabicToRoman(n);
-          displayResult(roman || 'Fuera de rango (1–3999).', !!roman);
+        /**
+         * Maneja la respuesta de la API, mostrando el resultado o un error.
+         * @param {Response} response Objeto de respuesta de la función fetch.
+         * @param {string} resultId ID del elemento donde se mostrará el resultado exitoso.
+         * @param {string} resultKey Clave del JSON de respuesta ('roman' o 'arabic').
+         */
+        async function handleApiResponse(response, resultId, resultKey) {
+            const data = await response.json();
+            const resultElement = document.getElementById(resultId);
+
+            if (response.ok) {
+                // Éxito (Status 200)
+                resultElement.textContent = `Resultado: ${data[resultKey]}`;
+                resultElement.classList.remove('bg-red-50', 'text-red-700');
+                resultElement.classList.add('bg-indigo-50', 'text-indigo-700');
+            } else {
+                // Error (Status 400 - Parámetro faltante o error de conversión)
+                if (data.title && data.detail) {
+                    showMessage(data.title, data.detail);
+                } else {
+                    showMessage('Error Desconocido', 'Ocurrió un error inesperado al comunicarse con la API.');
+                }
+                resultElement.textContent = 'Resultado: Error';
+                resultElement.classList.remove('bg-indigo-50', 'text-indigo-700');
+                resultElement.classList.add('bg-red-50', 'text-red-700');
+            }
         }
-      } else {
-        const arabic = romanToArabic(raw);
-        if (arabic === null) {
-          displayResult('Número romano inválido.', false);
-        } else {
-          displayResult(String(arabic), true);
+
+        /**
+         * Convierte Arábigo a Romano usando el endpoint /a2r de la API.
+         */
+        async function convertArabicToRoman() {
+            const input = document.getElementById('arabicInput').value.trim();
+            
+            if (input === "") {
+                showMessage("Parámetro Requerido", "El campo de número arábigo no puede estar vacío.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/a2r?arabic=${input}`);
+                await handleApiResponse(response, 'romanResult', 'roman');
+            } catch (error) {
+                console.error("Error al conectar con la API:", error);
+                showMessage('Error de Conexión', 'No se pudo conectar con el servidor de la API. Verifica la URL de Vercel.');
+            }
         }
-      }
-      setLoading(direction, false);
-    }
-  </script>
+
+        /**
+         * Convierte Romano a Arábigo usando el endpoint /r2a de la API.
+         */
+        async function convertRomanToArabic() {
+            const input = document.getElementById('romanInput').value.trim();
+            
+            if (input === "") {
+                showMessage("Parámetro Requerido", "El campo de número romano no puede estar vacío.");
+                return;
+            }
+
+            try {
+                // La API r2a maneja minúsculas, pero convertimos a mayúsculas para mejor consistencia visual
+                const upperInput = input.toUpperCase();
+                const response = await fetch(`${API_BASE_URL}/r2a?roman=${upperInput}`);
+                await handleApiResponse(response, 'arabicResult', 'arabic');
+            } catch (error) {
+                console.error("Error al conectar con la API:", error);
+                showMessage('Error de Conexión', 'No se pudo conectar con el servidor de la API. Verifica la URL de Vercel.');
+            }
+        }
+    </script>
+
 </body>
 </html>

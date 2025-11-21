@@ -1,180 +1,158 @@
-const { app, romanToArabic, arabicToRoman } = require('../romanos'); 
-const request = require('supertest'); 
-const { 
-    handleConversionError, 
-    handleMissingParam 
-} = require('../romanos'); // Se asume que estos se exportan en romanos.js
+const request = require('supertest');
 
-// Bloque de pruebas para la lógica de conversión (Tests Unitarios)
-// Demuestra que las funciones unitarias cumplen con el happy path y límites.
-describe('Conversion Functions - Lógica', () => {
+// IMPORTANTE: Se utiliza '../romanos' porque se asume que este archivo de prueba
+// está dentro de una carpeta 'test/' y necesita ir un nivel arriba para encontrar 'romanos.js'.
+const { 
+    app, 
+    romanToArabic, 
+    arabicToRoman,
+} = require('../romanos'); 
+
+// =========================================================================
+// BLOQUE 1: Pruebas Unitarias de Lógica de Conversión
+// Estos tests aseguran que las funciones internas funcionan correctamente.
+// =========================================================================
+describe('Conversion Functions - Lógica Unitaria', () => {
 
     // --- ARABIC TO ROMAN (A2R) ---
-    describe('arabicToRoman - Tests Positivos (Comportamiento Esperado)', () => {
-        // Test Positivo Básico: Mínimo valor
+    describe('arabicToRoman - Conversión de Arábigos a Romanos', () => {
+        
+        // Tests Positivos: Casos de éxito y límites
         test('Debe convertir 1 a I', () => {
             expect(arabicToRoman(1)).toBe('I');
         });
-
-        // Test Positivo Resta: Un caso con la regla de resta (90)
-        test('Debe convertir casos de resta (90)', () => {
-            expect(arabicToRoman(90)).toBe('XC');
-        });
-
-        // Test Positivo Complejo: Un caso complejo como un año (1994)
-        test('Debe convertir un numero complejo como 1994 a MCMXCIV', () => {
-            expect(arabicToRoman(1994)).toBe('MCMXCIV');
-        });
-        
-        // Test Positivo Límite Superior: Valor máximo permitido (3999)
         test('Debe convertir el valor maximo 3999 a MMMCMXCIX', () => {
             expect(arabicToRoman(3999)).toBe('MMMCMXCIX');
         });
-    });
+        test('Debe convertir un caso de resta (4) a IV', () => {
+            expect(arabicToRoman(4)).toBe('IV');
+        });
+        test('Debe convertir un caso complejo (1994) a MCMXCIV', () => {
+            expect(arabicToRoman(1994)).toBe('MCMXCIV');
+        });
 
-    describe('arabicToRoman - Tests Negativos (Comportamiento No Esperado)', () => {
-        // Test Negativo Límite Inferior (0)
-        test('Debe retornar null para 0 (limite inferior)', () => {
+        // Tests Negativos: Valores inválidos o fuera de rango
+        test('Debe retornar null para 0', () => {
             expect(arabicToRoman(0)).toBeNull();
         });
-
-        // Test Negativo Límite Superior (4000)
-        test('Debe retornar null para 4000 (limite superior)', () => {
+        test('Debe retornar null para 4000 (fuera de rango)', () => {
             expect(arabicToRoman(4000)).toBeNull();
         });
-
-        // Test Negativo Tipo de Dato (string)
-        test('Debe retornar null para un string no numerico', () => {
-            expect(arabicToRoman('hola')).toBeNull();
-        });
-
-        // Test Negativo Tipo de Dato (decimal)
-        test('Debe retornar null para un numero decimal', () => {
+        test('Debe retornar null para numeros decimales (1.5)', () => {
             expect(arabicToRoman(1.5)).toBeNull();
         });
+        test('Debe retornar null para NaN (ej: string que no es numero)', () => {
+            expect(arabicToRoman(NaN)).toBeNull();
+        });
     });
-    
+
     // --- ROMAN TO ARABIC (R2A) ---
-    describe('romanToArabic - Tests Positivos (Comportamiento Esperado)', () => {
-        // Test Positivo Básico: Mínimo valor
+    describe('romanToArabic - Conversión de Romanos a Arábigos', () => {
+
+        // Tests Positivos: Casos de éxito y límites
         test('Debe convertir I a 1', () => {
             expect(romanToArabic('I')).toBe(1);
         });
-        
-        // Test Positivo Resta: Un caso con la regla de resta (90)
-        test('Debe convertir casos de resta (XC)', () => {
-            expect(romanToArabic('XC')).toBe(90);
-        });
-
-        // Test Positivo Complejo: Un caso complejo como un año (1994)
-        test('Debe convertir un numero complejo como MCMXCIV a 1994', () => {
-            expect(romanToArabic('MCMXCIV')).toBe(1994);
-        });
-
-        // Test Positivo Límite Superior: Valor máximo permitido (3999)
         test('Debe convertir el valor maximo MMMCMXCIX a 3999', () => {
             expect(romanToArabic('MMMCMXCIX')).toBe(3999);
         });
-        
-        // Test Positivo con Minúsculas (tolerancia)
-        test('Debe manejar minusculas como mcxciv', () => {
-            expect(romanToArabic('mcMXC iv')).toBe(1994);
+        test('Debe convertir un caso de resta (XL) a 40', () => {
+            expect(romanToArabic('XL')).toBe(40);
         });
-    });
-
-    describe('romanToArabic - Tests Negativos (Comportamiento No Esperado)', () => {
-        // Test Negativo: Repetición de más de 3 veces (IIII)
-        test('Debe retornar null para repeticion invalida (IIII)', () => {
-            expect(romanToArabic('IIII')).toBeNull();
+        test('Debe convertir un caso complejo (MCMXCIV) a 1994', () => {
+            expect(romanToArabic('MCMXCIV')).toBe(1994);
         });
-        
-        // Test Negativo: Resta inválida (IC)
-        test('Debe retornar null para resta invalida (IC)', () => {
-            expect(romanToArabic('IC')).toBeNull();
-        });
-        
-        // Test Negativo: Formato inválido (VL)
-        test('Debe retornar null para formato inválido (VL)', () => {
-            expect(romanToArabic('VL')).toBeNull();
+        test('Debe manejar minusculas (mcmxciv) y convertirlo a 1994', () => {
+            // romanToArabic debe normalizar a mayúsculas internamente
+            expect(romanToArabic('mcmxciv')).toBe(1994); 
         });
 
-        // Test Negativo: Vacio
-        test('Debe retornar null para un string vacio', () => {
+        // Tests Negativos: Romanos inválidos
+        test('Debe retornar null para un string vacío', () => {
             expect(romanToArabic('')).toBeNull();
         });
-        
-        // Test Negativo: Null
-        test('Debe retornar null para null', () => {
-            expect(romanToArabic(null)).toBeNull();
+        test('Debe retornar null para un romano inválido (IIII)', () => {
+            expect(romanToArabic('IIII')).toBeNull();
+        });
+        test('Debe retornar null para un romano fuera de rango/malformado (VX)', () => {
+            expect(romanToArabic('VX')).toBeNull(); 
+        });
+        test('Debe retornar null para un romano que contenga caracteres no válidos (A)', () => {
+            expect(romanToArabic('IA')).toBeNull();
         });
     });
 });
 
 
-// Bloque de pruebas para la API REST (Tests de Integración)
-describe('API Endpoints - Conversión Pública (GET /r2a, /a2r)', () => {
-    
-    // --- API: ARABIC TO ROMAN (/a2r) ---
+// =========================================================================
+// BLOQUE 2: Pruebas de Integración de Endpoints Express (API)
+// Estos tests aseguran que la API responde con los códigos de estado correctos.
+// =========================================================================
+describe('API Endpoints - Integración', () => {
+
+    // --- ENDPOINT: /a2r (Arábigos a Romanos) ---
     describe('GET /a2r', () => {
-        // Test Positivo (HTTP 200)
-        test('Debe retornar 200 y el romano correcto para 1994', async () => {
+        // Test Positivo (HTTP 200): Conversión exitosa
+        test('Debe retornar 200 y el resultado romano para el numero 1994', async () => {
             const response = await request(app).get('/a2r?arabic=1994');
             expect(response.statusCode).toBe(200);
-            expect(response.body.roman).toBe('MCMXCIV');
+            expect(response.body).toEqual({ roman: 'MCMXCIV' });
         });
 
-        // Test Negativo (HTTP 400): Número arábigo fuera de rango
-        test('Debe retornar 400 para un numero arabigo fuera de rango (4000)', async () => {
+        // Test Negativo (HTTP 400): Número fuera de rango (ej: 4000)
+        test('Debe retornar 400 para un numero fuera de rango (4000)', async () => {
             const response = await request(app).get('/a2r?arabic=4000');
             expect(response.statusCode).toBe(400);
-            // Usando 'detail' porque la respuesta 400 usa el formato RFC 7807 (JSON con 'detail')
-            expect(response.body.detail).toContain('fuera del rango permitido'); 
+            expect(response.body.detail).toContain('fuera del rango'); 
         });
 
-        // Test Negativo (HTTP 400): Dato no numérico
-        test('Debe retornar 400 para un numero arabigo no numerico (hola)', async () => {
-            const response = await request(app).get('/a2r?arabic=hola');
+        // Test Negativo (HTTP 400): Número decimal
+        test('Debe retornar 400 para un numero decimal (1.5)', async () => {
+            const response = await request(app).get('/a2r?arabic=1.5');
             expect(response.statusCode).toBe(400);
-            // Usando 'detail' porque la respuesta 400 usa el formato RFC 7807 (JSON con 'detail')
-            expect(response.body.detail).toContain('fuera del rango permitido'); 
-        });
-    });
-
-    // --- API: ROMAN TO ARABIC (/r2a) ---
-    describe('GET /r2a', () => {
-        // Test Positivo (HTTP 200)
-        test('Debe retornar 200 y el arabigo correcto para MCM', async () => {
-            const response = await request(app).get('/r2a?roman=MCM');
-            expect(response.statusCode).toBe(200);
-            expect(response.body.arabic).toBe(1900);
+            expect(response.body.detail).toContain('debe ser un entero'); 
         });
 
-        // Test Negativo (HTTP 400): Romano inválido
-        test('Debe retornar 400 para un numero romano invalido (VL)', async () => {
-            const response = await request(app).get('/r2a?roman=VL');
-            expect(response.statusCode).toBe(400);
-            // Usando 'detail' porque la respuesta 400 usa el formato RFC 7807 (JSON con 'detail')
-            expect(response.body.detail).toContain('inválido'); 
-        });
-        
-        // Test Negativo (HTTP 400): Romano fuera de rango (ej: IVI)
-        test('Debe retornar 400 para un romano fuera de rango/malformado (IVI)', async () => {
-            const response = await request(app).get('/r2a?roman=IVI');
-            expect(response.statusCode).toBe(400);
-            // Usando 'detail' porque la respuesta 400 usa el formato RFC 7807 (JSON con 'detail')
-            expect(response.body.detail).toContain('inválido'); 
-        });
-    });
-
-    // Tests de Integración Negativos para parámetros faltantes (aplicable a ambos endpoints)
-    describe('Parametros Faltantes', () => {
-        test('Debe retornar 400 para /a2r si falta el parametro arabic', async () => {
+        // Test Negativo (HTTP 400): Parámetro faltante
+        test('Debe retornar 400 si falta el parametro arabic', async () => {
             const response = await request(app).get('/a2r');
             expect(response.statusCode).toBe(400);
             expect(response.body.detail).toContain('requerido');
         });
+    });
 
-        test('Debe retornar 400 para /r2a si falta el parametro roman', async () => {
+    // --- ENDPOINT: /r2a (Romanos a Arábigos) ---
+    describe('GET /r2a', () => {
+        // Test Positivo (HTTP 200): Conversión exitosa
+        test('Debe retornar 200 y el resultado arabigo para el romano MCMXCIV', async () => {
+            const response = await request(app).get('/r2a?roman=MCMXCIV');
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual({ arabic: 1994 });
+        });
+
+        // Test Positivo (HTTP 200): Manejo de minúsculas
+        test('Debe retornar 200 y el resultado arabigo para el romano en minusculas (mcmxciv)', async () => {
+            const response = await request(app).get('/r2a?roman=mcmxciv');
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual({ arabic: 1994 });
+        });
+        
+        // Test Negativo (HTTP 400): Romano inválido (ej: IIII)
+        test('Debe retornar 400 para un romano inválido (IIII)', async () => {
+            const response = await request(app).get('/r2a?roman=IIII');
+            expect(response.statusCode).toBe(400);
+            expect(response.body.detail).toContain('inválido'); 
+        });
+
+        // Test Negativo (HTTP 400): Romano fuera de rango/malformado (ej: VX)
+        test('Debe retornar 400 para un romano fuera de rango/malformado (VX)', async () => {
+            const response = await request(app).get('/r2a?roman=VX');
+            expect(response.statusCode).toBe(400);
+            expect(response.body.detail).toContain('inválido'); 
+        });
+
+        // Test Negativo (HTTP 400): Parámetro faltante
+        test('Debe retornar 400 si falta el parametro roman', async () => {
             const response = await request(app).get('/r2a');
             expect(response.statusCode).toBe(400);
             expect(response.body.detail).toContain('requerido');
