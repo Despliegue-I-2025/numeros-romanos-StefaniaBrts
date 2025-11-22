@@ -8,13 +8,13 @@ on:
     branches:
       - main
 
-permissions:
+
+jobs:permissions:
   contents: read
   issues: write
   pull-requests: write
   statuses: write
-
-jobs:
+  deployments: write
   test_and_deploy:
     runs-on: ubuntu-latest
     
