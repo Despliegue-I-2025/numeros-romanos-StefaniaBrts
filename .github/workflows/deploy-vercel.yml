@@ -8,16 +8,17 @@ on:
     branches:
       - main
 
-
-jobs:permissions:
+permissions:
   contents: read
   issues: write
   pull-requests: write
   statuses: write
   deployments: write
+
+jobs:
   test_and_deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout del Repositorio
         uses: actions/checkout@v4
@@ -49,6 +50,7 @@ jobs:permissions:
           alias-domains: |
             numeros-romanos-api-stefaniabrts.vercel.app
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 
