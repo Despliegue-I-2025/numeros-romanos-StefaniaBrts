@@ -1,20 +1,14 @@
 const express = require('express');
 const app = express();
-const path = require('path'); // 👈 AÑADE ESTO
-
 const PORT = process.env.PORT || 4000;
 
 // Configuración de Express para manejar JSON
 app.use(express.json());
 
-// 👇 AÑADE ESTO: Servir archivos estáticos desde la carpeta public
-app.use(express.static(path.join(__dirname, 'public')));
-
 // =========================================================================
 // LÓGICA DE CONVERSIÓN (AJUSTADA AL RANGO [1-3999])
 // =========================================================================
 
-// [TODO TU CÓDIGO ACTUAL SE MANTIENE IGUAL...]
 // Definición de valores para la conversión
 const ROMAN_MAP = {
   M: 1000,
@@ -110,18 +104,19 @@ function handleConversionError(res, paramType, value) {
     if (String(value).includes('.') || String(value).includes(',')) {
       detail = `El número arábigo proporcionado ('${value}') debe ser un entero sin decimales.`;
     } else {
+      // *** CORRECCIÓN PARA QUE PASE EL TEST ***
       detail = `El número arábigo proporcionado ('${value}') está fuera del rango permitido (1-3999).`;
     }
   } else if (paramType === 'roman') {
     detail = `El número romano proporcionado ('${value}') es inválido o está fuera del rango [I-MMMCMXCIX].`;
   }
 
-  return res.status(400).json({
-    type: 'about:blank',
-    title: 'Error de Conversión',
-    status: 400,
-    detail: detail,
-  });
+return res.status(400).json({
+  type: 'about:blank',
+  title: 'Error de Conversión',
+  status: 400,
+  detail: detail,
+});
 }
 
 // =========================================================================
@@ -129,7 +124,7 @@ function handleConversionError(res, paramType, value) {
 // =========================================================================
 
 // Romanos → Arábigos
-app.get('/api/r2a', (req, res) => { // 👈 CAMBIA a /api/r2a
+app.get('/r2a', (req, res) => {
   const romanNumeral = req.query.roman;
 
   if (romanNumeral === undefined || romanNumeral === '') {
@@ -146,7 +141,7 @@ app.get('/api/r2a', (req, res) => { // 👈 CAMBIA a /api/r2a
 });
 
 // Arábigos → Romanos
-app.get('/api/a2r', (req, res) => { // 👈 CAMBIA a /api/a2r
+app.get('/a2r', (req, res) => {
   const arabic = req.query.arabic;
 
   if (arabic === undefined || arabic === '') {
@@ -162,20 +157,24 @@ app.get('/api/a2r', (req, res) => { // 👈 CAMBIA a /api/a2r
   return res.json({ roman });
 });
 
-// 👇 AÑADE ESTO: Ruta para el frontend
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 // =========================================================================
-// EXPORTS - CORREGIDO PARA VERCEL
+// EXPORTS - CORREGIDO PARA TESTS Y VERCEL
 // =========================================================================
 
-// 👇 CAMBIA esto - Vercel necesita exportar solo la app
-module.exports = app;
+// Solo inicia el servidor si se ejecuta directamente (no en tests)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en puerto ${PORT}`);
+  });
+}
 
-// 👇 OPCIONAL: Si quieres mantener tus exports para testing
-module.exports.romanToArabic = romanToArabic;
-module.exports.arabicToRoman = arabicToRoman;
-
-
+// 👇 EXPORTACIÓN ÚNICA como objeto para compatibilidad con tests y Vercel
+module.exports = { 
+  app,
+  romanToArabic,
+  arabicToRoman,
+  handleMissingParam,
+  handleConversionError,
+  ROMAN_REGEX,
+  ROMAN_MAP
+};
