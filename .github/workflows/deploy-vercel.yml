@@ -34,12 +34,12 @@ jobs:
       - name: Ejecutar Pruebas y Generar Cobertura
         run: npm test
 
-      - name: Subir informe de Cobertura
-        uses: actions/upload-artifact@v4
-        with:
-          name: lcov-report
-          path: ./lcov-report
-          if-no-files-found: ignore
+      #- name: Subir informe de Cobertura
+       # uses: actions/upload-artifact@v4
+        #with:
+         # name: lcov-report
+          #path: ./lcov-report
+          #f-no-files-found: ignore
 
       - name: Desplegar a Vercel
         uses: amondnet/vercel-action@v25
