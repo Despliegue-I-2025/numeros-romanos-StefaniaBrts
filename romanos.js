@@ -4,6 +4,13 @@ const PORT = process.env.PORT || 4000;
 
 // Configuración de Express para manejar JSON
 app.use(express.json());
+// Servir archivos estáticos desde la carpeta public
+app.use(express.static('public'));
+
+// Ruta para el frontend
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
 
 // =========================================================================
 // LÓGICA DE CONVERSIÓN (AJUSTADA AL RANGO [1-3999])
