@@ -120,7 +120,7 @@ return res.status(400).json({
 }
 
 // =========================================================================
-// ENDPOINTS
+// ENDPOINTS ORIGINALES
 // =========================================================================
 
 // Romanos → Arábigos
@@ -155,6 +155,62 @@ app.get('/a2r', (req, res) => {
   }
 
   return res.json({ roman });
+});
+
+// =========================================================================
+// NUEVAS RUTAS PARA EL FRONTEND (AGREGADAS)
+// =========================================================================
+
+// Ruta para Romano → Arábigo (que usa el frontend)
+app.get('/api/r2a', (req, res) => {
+  const romanNumeral = req.query.roman;
+
+  if (romanNumeral === undefined || romanNumeral === '') {
+    return res.status(400).json({ 
+      error: true,
+      detail: 'El parámetro "roman" es requerido' 
+    });
+  }
+
+  const arabicNumber = romanToArabic(romanNumeral);
+
+  if (arabicNumber === null) {
+    return res.status(400).json({ 
+      error: true,
+      detail: `El número romano '${romanNumeral}' es inválido o está fuera del rango [I-MMMCMXCIX].`
+    });
+  }
+
+  return res.json({ 
+    arabic: arabicNumber,
+    roman: romanNumeral.toUpperCase()
+  });
+});
+
+// Ruta para Arábigo → Romano (que usa el frontend)
+app.get('/api/a2r', (req, res) => {
+  const arabic = req.query.arabic;
+
+  if (arabic === undefined || arabic === '') {
+    return res.status(400).json({ 
+      error: true,
+      detail: 'El parámetro "arabic" es requerido' 
+    });
+  }
+
+  const roman = arabicToRoman(arabic);
+
+  if (roman === null) {
+    return res.status(400).json({ 
+      error: true,
+      detail: `El número arábigo '${arabic}' está fuera del rango permitido (1-3999).`
+    });
+  }
+
+  return res.json({ 
+    roman: roman,
+    arabic: parseInt(arabic)
+  });
 });
 
 // =========================================================================
