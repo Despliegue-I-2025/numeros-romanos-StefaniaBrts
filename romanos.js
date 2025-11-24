@@ -168,13 +168,18 @@ if (require.main === module) {
   });
 }
 
-// 👇 EXPORTACIÓN ÚNICA como objeto para compatibilidad con tests y Vercel
-module.exports = { 
-  app,
-  romanToArabic,
-  arabicToRoman,
-  handleMissingParam,
-  handleConversionError,
-  ROMAN_REGEX,
-  ROMAN_MAP
-};
+/// Export SOLO la app para Vercel
+module.exports = app;
+
+// Opcional: mantener exports para tests
+if (process.env.NODE_ENV === 'test') {
+  module.exports = { 
+    app,
+    romanToArabic,
+    arabicToRoman,
+    handleMissingParam,
+    handleConversionError,
+    ROMAN_REGEX,
+    ROMAN_MAP
+  };
+}
